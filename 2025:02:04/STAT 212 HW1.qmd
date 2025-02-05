@@ -1,0 +1,62 @@
+---
+title: "STAT 212 HW1"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(plotly)
+```
+
+```{r}
+# Option 1: tidytuesdayR package 
+## install.packages("tidytuesdayR")
+
+tuesdata <- tidytuesdayR::tt_load('2025-01-21')
+## OR
+tuesdata <- tidytuesdayR::tt_load(2025, week = 3)
+
+exped_tidy <- tuesdata$exped_tidy
+peaks_tidy <- tuesdata$peaks_tidy
+
+# Option 2: Read directly from GitHub
+
+exped_tidy <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2025/2025-01-21/exped_tidy.csv')
+peaks_tidy <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2025/2025-01-21/peaks_tidy.csv')
+
+#View(exped_tidy)
+#View(peaks_tidy)
+```
+
+```{r}
+avg_peak_height <- peaks_tidy %>%
+  group_by(REGION_FACTOR) %>%
+  summarize(avg_peak_height = mean(HEIGHTM, na.rm = TRUE))
+
+```
+
+```{r}
+open_avg_hgt <- peaks_tidy %>%
+  group_by(REGION_FACTOR, OPEN) %>%
+  summarize(avg_height = mean(HEIGHTM, na.rm = TRUE)) %>%
+  ungroup()
+
+tt1 <- ggplot(open_avg_hgt, aes(x = REGION_FACTOR, y = avg_height, fill = OPEN)) +
+  geom_bar(stat = "identity", position = "stack") +
+  labs(title = "Average Peak Height by Region (Stacked by Open Status)",
+       x = "Region",
+       y = "Average Peak Height",
+       fill = "Open") +
+  scale_fill_manual(values = c("TRUE" = "pink2", "FALSE" = "lavender"), 
+                    labels = c("Open", "Closed")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggsave(filename = "1-21-2025_TT.jpg", plot = tt1)
+
+```
+
+
+
