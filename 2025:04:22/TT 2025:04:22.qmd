@@ -30,7 +30,7 @@ accidents_420 <- ggplot(accidents_clean, aes(x = e420, y = fatalities_count, fil
                   ) +
                   theme_minimal()
 
-ggsave("~420_Accidents", accidents_20)
+#ggsave("420_Accidents.png", accidents_420)
 ```
 
 
