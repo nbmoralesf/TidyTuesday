@@ -1,0 +1,37 @@
+---
+title: "TT 2025/04/22"
+format: html
+editor: visual
+---
+
+### Data
+```{r data message=FALSE}
+daily_accidents <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2025/2025-04-22/daily_accidents.csv')
+daily_accidents_420 <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2025/2025-04-22/daily_accidents_420.csv')
+```
+
+
+### Visualization
+```{r viz}
+library(ggplot2)
+library(dplyr)
+
+accidents_clean <- daily_accidents_420 %>% 
+  filter(!is.na(e420))
+
+accidents_420 <- ggplot(accidents_clean, aes(x = e420, y = fatalities_count, fill = e420)) +
+                  geom_boxplot(alpha = 0.5) +
+                  scale_x_discrete(labels = c("Other Dates", "April 20th")) +
+                  labs(title = "Count of fatalities due to car accidents on April 20th vs. Other Dates",
+                    subtitle = "Are Accidents on April 20th More Deadly?",
+                    x = "Date",
+                    y = "Number of Fatalities",
+                    fill = ""
+                  ) +
+                  theme_minimal()
+
+ggsave("~420_Accidents", accidents_20)
+```
+
+
+

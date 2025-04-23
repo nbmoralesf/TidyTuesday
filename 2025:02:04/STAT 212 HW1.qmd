@@ -57,6 +57,3 @@ tt1 <- ggplot(open_avg_hgt, aes(x = REGION_FACTOR, y = avg_height, fill = OPEN))
 ggsave(filename = "1-21-2025_TT.jpg", plot = tt1)
 
 ```
-
-
-
