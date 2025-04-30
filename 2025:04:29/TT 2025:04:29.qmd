@@ -4,23 +4,85 @@ format: html
 editor: visual
 ---
 
-## Quarto
-
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
-
-## Running Code
-
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
-
 ```{r}
-1 + 1
+library(tidyverse)
+library(tidytext)
+library(ggplot2)
 ```
 
-You can add options to executable code like this
+
+## Data
 
 ```{r}
-#| echo: false
-2 * 2
+user2025 <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2025/2025-04-29/user2025.csv')
+```
+## Visualization
+
+Heatmap of keyword frequency by day.
+
+```{r}
+user2025_hm <- user2025 %>% 
+  mutate(keywords = strsplit(keywords, ",\\s*")) %>% 
+  unnest(keywords) %>% 
+  filter(!is.na(keywords), keywords != "") %>% 
+  count(date, keywords) %>% 
+  group_by(keywords) %>% 
+  filter(sum(n) >= 5)
+
+ggplot(user2025_hm, aes(x = date, y = fct_reorder(keywords, n), fill = n))+
+  geom_tile(color = "white")+
+  scale_fill_viridis_c()+
+  labs(title = "Keyword Frequency by Day",
+       x = "Date",
+       y = "Keyword")+
+  theme_minimal()
+
+```
+```{r}
+keywords_clean <- user2025 %>%
+  separate_rows(keywords, sep = ",\\s*") %>%
+  filter(!is.na(keywords), keywords != "") %>%
+  mutate(
+    keywords = str_to_lower(keywords),
+    session = str_trim(session)
+  )
+
+# Step 2: Top 10 keywords overall
+top_keywords <- keywords_clean %>%
+  count(keywords, sort = TRUE) %>%
+  slice_max(n, n = 10) %>%
+  pull(keywords)
+
+# Step 3: Top 10 session types by keyword frequency
+top_sessions <- keywords_clean %>%
+  count(session, sort = TRUE) %>%
+  slice_max(n, n = 10) %>%
+  pull(session)
+
+# Step 4: Prepare plot data
+plot_data <- keywords_clean %>%
+  filter(keywords %in% top_keywords, session %in% top_sessions) %>%
+  count(keywords, session) %>%
+  group_by(keywords) %>%
+  mutate(total = sum(n)) %>%
+  ungroup() %>%
+  mutate(keywords = fct_reorder(keywords, total))
+
+# Step 5: Stacked bar plot
+ggplot(plot_data, aes(x = keywords, y = n, fill = session)) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    title = "Top 10 Keywords by Session Type — useR! 2025",
+    subtitle = "Filtered to top 10 keywords and session types",
+    x = "Keyword",
+    y = "Count",
+    fill = "Session Type"
+  ) +
+  theme_minimal(base_size = 14)
+
+ggsave("top_keywords.png", width = 10, height = 6, dpi = 300)
+
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+
